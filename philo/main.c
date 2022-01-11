@@ -6,13 +6,28 @@
 /*   By: erayl <erayl@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/18 16:02:30 by erayl             #+#    #+#             */
-/*   Updated: 2021/12/19 20:07:02 by erayl            ###   ########.fr       */
+/*   Updated: 2022/01/11 19:23:45 by erayl            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "phils.h"
 
-void	philosopher_init(t_philosopher *philosopher, size_t num, t_fork	*right, t_fork *left)
+void	destroy_table(t_philconfig	*cfg)
+{
+	size_t	i;
+
+	t_fork	*fork;
+	i = 0;
+	while (i < cfg->number_of_philosophers)
+	{
+		fork = cfg->forks + i;
+		pthread_mutex_destroy(&fork->mutex);
+		i++;
+	}
+}
+
+void	philosopher_init(t_philosopher *philosopher,
+size_t num, t_fork	*right, t_fork *left)
 {
 	philosopher->num = num;
 	if (right->priority < left->priority)
@@ -65,12 +80,22 @@ void	configure(t_philconfig *cfg, int argc, char **argv)
 	cfg->time_to_eat = ft_atolld(argv[3]);
 	cfg->time_to_sleep = ft_atolld(argv[4]);
 	cfg->is_someone_dead = false;
-	cfg->finally.priority = 0;
-	pthread_mutex_init(&cfg->finally.mutex, NULL);
-	pthread_mutex_init(&cfg->death_mutex, NULL);
 	if (argc == 6)
 		cfg->nums_to_eat = ft_atost(argv[5]);
 	create_table(cfg);
+}
+
+void	create_threads(t_philconfig *cfg)
+{
+	size_t	i;
+
+	i = 0;
+	while (i < cfg->number_of_philosophers)
+	{
+		pthread_create(&cfg->philosophers[i].th, NULL,
+			&philosopher, &cfg->philosophers[i]);
+		i++;
+	}
 }
 
 int	main(int argc, char **argv)
@@ -81,17 +106,22 @@ int	main(int argc, char **argv)
 	if (argc == 5 || argc == 6)
 	{
 		configure(&cfg, argc, argv);
+		create_threads(&cfg);
+		/*
 		i = 0;
 		while (i < cfg.number_of_philosophers)
 		{
-			pthread_create(&cfg.philosophers[i].th, NULL, &philosopher, &cfg.philosophers[i]);
+			pthread_create(&cfg.philosophers[i].th, NULL,
+				&philosopher, &cfg.philosophers[i]);
 			i++;
 		}
+		*/
 		i = 0;
 		while (i < cfg.number_of_philosophers)
 		{
 			pthread_join(cfg.philosophers[i].th, NULL);
 			i++;
 		}
+		destroy_table(&cfg);
 	}
 }

@@ -6,7 +6,7 @@
 /*   By: erayl <erayl@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/19 17:18:04 by erayl             #+#    #+#             */
-/*   Updated: 2021/12/19 20:06:48 by erayl            ###   ########.fr       */
+/*   Updated: 2022/01/11 19:15:46 by erayl            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,9 +43,7 @@ typedef struct s_cfg
 	size_t			nums_to_eat;
 	t_philosopher	*philosophers;
 	t_fork			*forks;
-	t_fork			finally;
 	bool			is_someone_dead;
-	pthread_mutex_t	death_mutex;
 }	t_philconfig;
 long long	ft_atolld(const char *s);
 size_t		ft_atost(const char *s);

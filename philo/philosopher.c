@@ -6,7 +6,7 @@
 /*   By: erayl <erayl@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/19 17:46:45 by erayl             #+#    #+#             */
-/*   Updated: 2021/12/19 20:07:26 by erayl            ###   ########.fr       */
+/*   Updated: 2022/01/11 19:29:02 by erayl            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ long long	current_timestamp(void)
     return (milliseconds);
 }
 
+/*
 void	death(t_philosopher *this)
 {
 	size_t	i;
@@ -49,6 +50,7 @@ void	death(t_philosopher *this)
 	free(this->cfg->forks);
 	exit(0);
 }
+*/
 
 void	think(t_philosopher *this)
 {
@@ -57,8 +59,6 @@ void	think(t_philosopher *this)
 
 void	free_mutexes(t_philosopher *this)
 {
-	pthread_mutex_lock(&this->cfg->finally.mutex);
-	this->cfg->finally.priority++;
 	if (this->is_first_locked_by_me)
 	{
 		this->is_first_locked_by_me = false;
@@ -69,27 +69,19 @@ void	free_mutexes(t_philosopher *this)
 		this->is_second_locked_by_me = false;
 		pthread_mutex_unlock(&this->second->mutex);
 	}
-	pthread_mutex_unlock(&this->cfg->finally.mutex);
 }
 
-void	end_job(t_philosopher *this)
+bool	try_to(t_philosopher *this, void (*action)(t_philosopher *this))
 {
-	free_mutexes(this);
-	while (true);
-}
-
-void	try_to(t_philosopher *this, void (*action)(t_philosopher *this))
-{
-	pthread_mutex_lock(&this->cfg->death_mutex);
 	if (!this->cfg->is_someone_dead)
 	{
-		pthread_mutex_unlock(&this->cfg->death_mutex);
 		action(this);
+		return (true);
 	}
 	else
 	{
-		pthread_mutex_unlock(&this->cfg->death_mutex);
-		end_job(this);
+		free_mutexes(this);
+		return (false);
 	}
 }
 
@@ -112,7 +104,8 @@ void	*philosopher(void *param)
 		i = 0;
 		while (i < 5)
 		{
-			try_to(this, life[i]);
+			if (!try_to(this, life[i]))
+				return (NULL);
 			i++;
 		}
 	}
