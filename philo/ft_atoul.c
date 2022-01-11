@@ -12,12 +12,13 @@
 
 #include "phils.h"
 
-static int	ft_isdigit(int c)
+static
+int	ft_isdigit(int c)
 {
 	return (c >= '0' && c <= '9');
 }
 
-size_t	ft_atoul(const char *s)
+size_t	ft_atost(const char *s)
 {
 	size_t	result;
 
@@ -25,6 +26,20 @@ size_t	ft_atoul(const char *s)
 	while (*s && ft_isdigit(*s))
 	{
 		result *= 10ul;
+		result += *s - '0';
+		s++;
+	}
+	return (result);
+}
+
+long long ft_atolld(const char *s)
+{
+	long long	result;
+
+	result = 0;
+	while (*s && ft_isdigit(*s))
+	{
+		result *= 10ll;
 		result += *s - '0';
 		s++;
 	}
