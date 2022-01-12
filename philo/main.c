@@ -6,13 +6,13 @@
 /*   By: erayl <erayl@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/18 16:02:30 by erayl             #+#    #+#             */
-/*   Updated: 2022/01/11 19:23:45 by erayl            ###   ########.fr       */
+/*   Updated: 2022/01/12 17:26:51 by erayl            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "phils.h"
 
-void	destroy_table(t_philconfig	*cfg)
+void	destroy_table(t_maincfg	*cfg)
 {
 	size_t	i;
 
@@ -24,27 +24,36 @@ void	destroy_table(t_philconfig	*cfg)
 		pthread_mutex_destroy(&fork->mutex);
 		i++;
 	}
+	pthread_mutex_destroy(&cfg->lifecfg.death_mutex);
+	free(cfg->philosophers);
+	free(cfg->forks);
 }
 
 void	philosopher_init(t_philosopher *philosopher,
-size_t num, t_fork	*right, t_fork *left)
+size_t num, t_maincfg *cfg)
 {
-	philosopher->num = num;
-	if (right->priority < left->priority)
+	t_fork	*right_fork;
+	t_fork	*left_fork;
+
+	right_fork = cfg->forks + (num % cfg->number_of_philosophers);
+	left_fork = cfg->forks + ((num + 1) % cfg->number_of_philosophers);
+	if (left_fork->priority > right_fork->priority)
 	{
-		philosopher->first = right;
-		philosopher->second = left;
+		philosopher->first = &right_fork->mutex;
+		philosopher->second = &left_fork->mutex;
 	}
 	else
 	{
-		philosopher->first = left;
-		philosopher->second = right;
+		philosopher->first = &left_fork->mutex;
+		philosopher->second = &right_fork->mutex;
 	}
+	philosopher->num = num + 1;
+	philosopher->lifecfg = &cfg->lifecfg;
 	philosopher->is_first_locked_by_me = false;
 	philosopher->is_second_locked_by_me = false;
 }
 
-void	create_table(t_philconfig *cfg)
+void	create_table(t_maincfg *cfg)
 {
 	size_t			i;
 	t_fork			*forks;
@@ -58,34 +67,43 @@ void	create_table(t_philconfig *cfg)
 		forks[i].priority = i;
 		i++;
 	}
+	cfg->forks = forks;
 	philosophers = malloc(sizeof(t_philosopher) * cfg->number_of_philosophers);
 	i = 0;
 	while (i < cfg->number_of_philosophers)
 	{
-		philosophers[i].cfg = cfg;
-		if (i + 1 != cfg->number_of_philosophers)
-			philosopher_init(philosophers + i, i + 1, forks + i, forks + i + 1);
-		else
-			philosopher_init(philosophers + i, i + 1, forks + i, forks);
+		philosopher_init(philosophers + i, i, cfg);
 		i++;
 	}
 	cfg->philosophers = philosophers;
-	cfg->forks = forks;
 }
 
-void	configure(t_philconfig *cfg, int argc, char **argv)
+void	configure(t_maincfg *cfg, int argc, char **argv)
 {
 	cfg->number_of_philosophers = ft_atost(argv[1]);
-	cfg->time_to_die = ft_atolld(argv[2]);
-	cfg->time_to_eat = ft_atolld(argv[3]);
-	cfg->time_to_sleep = ft_atolld(argv[4]);
-	cfg->is_someone_dead = false;
+	cfg->lifecfg.time_to_die = ft_atolld(argv[2]);
+	cfg->lifecfg.time_to_eat = ft_atolld(argv[3]);
+	cfg->lifecfg.time_to_sleep = ft_atolld(argv[4]);
+	cfg->lifecfg.is_someone_dead = false;
+	pthread_mutex_init(&cfg->lifecfg.death_mutex, NULL);
 	if (argc == 6)
-		cfg->nums_to_eat = ft_atost(argv[5]);
+		cfg->lifecfg.nums_to_eat = ft_atost(argv[5]);
+	else
+		cfg->lifecfg.nums_to_eat = 0;
 	create_table(cfg);
 }
 
-void	create_threads(t_philconfig *cfg)
+void	*tst(void *a)
+{
+	(void) a;
+	for (size_t i = 0; i < 10; i++)
+	{
+		printf("%zu\n", i);
+	}
+	return (NULL);
+}
+
+void	create_threads(t_maincfg *cfg)
 {
 	size_t	i;
 
@@ -98,30 +116,28 @@ void	create_threads(t_philconfig *cfg)
 	}
 }
 
+void	wait_for_threads(t_maincfg *cfg)
+{
+	size_t	i;
+
+	i = 0;
+	while (i < cfg->number_of_philosophers)
+	{
+		pthread_join(cfg->philosophers[i].th, NULL);
+		i++;
+	}
+}
+
 int	main(int argc, char **argv)
 {
-	t_philconfig	cfg;
-	size_t			i;
+	t_maincfg	cfg;
 
 	if (argc == 5 || argc == 6)
 	{
 		configure(&cfg, argc, argv);
 		create_threads(&cfg);
-		/*
-		i = 0;
-		while (i < cfg.number_of_philosophers)
-		{
-			pthread_create(&cfg.philosophers[i].th, NULL,
-				&philosopher, &cfg.philosophers[i]);
-			i++;
-		}
-		*/
-		i = 0;
-		while (i < cfg.number_of_philosophers)
-		{
-			pthread_join(cfg.philosophers[i].th, NULL);
-			i++;
-		}
+		wait_for_threads(&cfg);
 		destroy_table(&cfg);
 	}
+	return (0);
 }
