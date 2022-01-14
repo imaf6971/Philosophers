@@ -6,17 +6,18 @@
 /*   By: erayl <erayl@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/18 16:02:30 by erayl             #+#    #+#             */
-/*   Updated: 2022/01/12 17:26:51 by erayl            ###   ########.fr       */
+/*   Updated: 2022/01/14 20:03:38 by erayl            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "phils.h"
 
+static
 void	destroy_table(t_maincfg	*cfg)
 {
 	size_t	i;
-
 	t_fork	*fork;
+
 	i = 0;
 	while (i < cfg->number_of_philosophers)
 	{
@@ -29,6 +30,7 @@ void	destroy_table(t_maincfg	*cfg)
 	free(cfg->forks);
 }
 
+static
 void	philosopher_init(t_philosopher *philosopher,
 size_t num, t_maincfg *cfg)
 {
@@ -47,12 +49,14 @@ size_t num, t_maincfg *cfg)
 		philosopher->first = &left_fork->mutex;
 		philosopher->second = &right_fork->mutex;
 	}
+	philosopher->eat_count = 0;
 	philosopher->num = num + 1;
 	philosopher->lifecfg = &cfg->lifecfg;
 	philosopher->is_first_locked_by_me = false;
 	philosopher->is_second_locked_by_me = false;
 }
 
+static
 void	create_table(t_maincfg *cfg)
 {
 	size_t			i;
@@ -78,6 +82,7 @@ void	create_table(t_maincfg *cfg)
 	cfg->philosophers = philosophers;
 }
 
+static
 void	configure(t_maincfg *cfg, int argc, char **argv)
 {
 	cfg->number_of_philosophers = ft_atost(argv[1]);
@@ -91,41 +96,6 @@ void	configure(t_maincfg *cfg, int argc, char **argv)
 	else
 		cfg->lifecfg.nums_to_eat = 0;
 	create_table(cfg);
-}
-
-void	*tst(void *a)
-{
-	(void) a;
-	for (size_t i = 0; i < 10; i++)
-	{
-		printf("%zu\n", i);
-	}
-	return (NULL);
-}
-
-void	create_threads(t_maincfg *cfg)
-{
-	size_t	i;
-
-	i = 0;
-	while (i < cfg->number_of_philosophers)
-	{
-		pthread_create(&cfg->philosophers[i].th, NULL,
-			&philosopher, &cfg->philosophers[i]);
-		i++;
-	}
-}
-
-void	wait_for_threads(t_maincfg *cfg)
-{
-	size_t	i;
-
-	i = 0;
-	while (i < cfg->number_of_philosophers)
-	{
-		pthread_join(cfg->philosophers[i].th, NULL);
-		i++;
-	}
 }
 
 int	main(int argc, char **argv)

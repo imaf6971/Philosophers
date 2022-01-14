@@ -6,14 +6,14 @@
 /*   By: erayl <erayl@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/12 16:36:03 by erayl             #+#    #+#             */
-/*   Updated: 2022/01/12 17:25:22 by erayl            ###   ########.fr       */
+/*   Updated: 2022/01/14 19:49:24 by erayl            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "phils.h"
 
 static
-long long	system_time(void)
+long long	system_time_in_ms(void)
 {
 	struct timeval	te;
 	long long		milliseconds;
@@ -28,11 +28,11 @@ long long	current_timestamp(void)
 	static long long	start_time;
 
 	if (start_time == 0)
-		start_time = system_time();
-	return (system_time() - start_time);
+		start_time = system_time_in_ms();
+	return (system_time_in_ms() - start_time);
 }
 
-void	wwwait(long long time_to_wait)
+void	accurate_sleep(long long time_to_wait)
 {
 	long long	initial_time;
 

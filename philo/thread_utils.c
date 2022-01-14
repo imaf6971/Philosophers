@@ -1,47 +1,38 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_atoul.c                                         :+:      :+:    :+:   */
+/*   thread_utils.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: erayl <erayl@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/12/19 17:29:24 by erayl             #+#    #+#             */
-/*   Updated: 2022/01/14 19:57:55 by erayl            ###   ########.fr       */
+/*   Created: 2022/01/14 19:59:53 by erayl             #+#    #+#             */
+/*   Updated: 2022/01/14 20:03:14 by erayl            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "phils.h"
 
-static
-int	ft_isdigit(int c)
+void	create_threads(t_maincfg *cfg)
 {
-	return (c >= '0' && c <= '9');
+	size_t	i;
+
+	i = 0;
+	while (i < cfg->number_of_philosophers)
+	{
+		pthread_create(&cfg->philosophers[i].th, NULL,
+			&philosopher, &cfg->philosophers[i]);
+		i++;
+	}
 }
 
-size_t	ft_atost(const char *s)
+void	wait_for_threads(t_maincfg *cfg)
 {
-	size_t	result;
+	size_t	i;
 
-	result = 0;
-	while (*s && ft_isdigit(*s))
+	i = 0;
+	while (i < cfg->number_of_philosophers)
 	{
-		result *= 10ul;
-		result += *s - '0';
-		s++;
+		pthread_join(cfg->philosophers[i].th, NULL);
+		i++;
 	}
-	return (result);
-}
-
-long long	ft_atolld(const char *s)
-{
-	long long	result;
-
-	result = 0;
-	while (*s && ft_isdigit(*s))
-	{
-		result *= 10ll;
-		result += *s - '0';
-		s++;
-	}
-	return (result);
 }

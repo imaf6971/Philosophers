@@ -6,7 +6,7 @@
 /*   By: erayl <erayl@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/19 17:18:04 by erayl             #+#    #+#             */
-/*   Updated: 2022/01/12 17:26:31 by erayl            ###   ########.fr       */
+/*   Updated: 2022/01/14 20:02:15 by erayl            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ typedef struct s_phil
 	bool			is_first_locked_by_me;
 	pthread_mutex_t	*second;
 	bool			is_second_locked_by_me;
+	size_t			eat_count;
 	long long		last_time_eated;
 }	t_philosopher;
 typedef struct s_maincfg
@@ -60,10 +61,14 @@ void		eat(t_philosopher *this);
 void		drop_second(t_philosopher *this);
 void		drop_first(t_philosopher *this);
 void		sweet_sleep(t_philosopher	*this);
-void		end_job(t_philosopher *this);
-void		free_mutexes(t_philosopher *this);
-void		death(t_philosopher *this);
+void		create_threads(t_maincfg *cfg);
+void		wait_for_threads(t_maincfg *cfg);
 long long	current_timestamp(void);
-void		wwwait(long long time_to_wait);
+void		accurate_sleep(long long time_to_wait);
 long long	time_from_start(long long start_time);
+void		log_print(t_philosopher *this, void (*msg)(t_philosopher *));
+void		fork_msg(t_philosopher *this);
+void		eat_msg(t_philosopher *this);
+void		sleep_msg(t_philosopher *this);
+void		think_msg(t_philosopher *this);
 #endif
