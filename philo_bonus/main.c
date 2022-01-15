@@ -6,17 +6,12 @@
 /*   By: erayl <erayl@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/15 22:38:18 by erayl             #+#    #+#             */
-/*   Updated: 2022/01/16 01:50:04 by erayl            ###   ########.fr       */
+/*   Updated: 2022/01/16 01:52:21 by erayl            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "bphils.h"
 #include <string.h>
-
-void	philosopher(void)
-{
-	printf("phil\n");
-}
 
 static
 void	configure(t_maincfg *cfg, int argc, char **argv)
