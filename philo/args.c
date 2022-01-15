@@ -1,19 +1,19 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_atoul.c                                         :+:      :+:    :+:   */
+/*   args.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: erayl <erayl@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/19 17:29:24 by erayl             #+#    #+#             */
-/*   Updated: 2022/01/14 19:57:55 by erayl            ###   ########.fr       */
+/*   Updated: 2022/01/15 21:27:14 by erayl            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "phils.h"
 
 static
-int	ft_isdigit(int c)
+bool	ft_isdigit(int c)
 {
 	return (c >= '0' && c <= '9');
 }
@@ -29,12 +29,14 @@ size_t	ft_atost(const char *s)
 		result += *s - '0';
 		s++;
 	}
+	if (*s)
+		return (0ul);
 	return (result);
 }
 
-long long	ft_atolld(const char *s)
+t_ms	ft_atoms(const char *s)
 {
-	long long	result;
+	t_ms	result;
 
 	result = 0;
 	while (*s && ft_isdigit(*s))
@@ -43,5 +45,7 @@ long long	ft_atolld(const char *s)
 		result += *s - '0';
 		s++;
 	}
+	if (*s)
+		return (0ll);
 	return (result);
 }

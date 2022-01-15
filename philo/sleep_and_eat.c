@@ -6,62 +6,61 @@
 /*   By: erayl <erayl@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/22 22:44:03 by marvin            #+#    #+#             */
-/*   Updated: 2022/01/14 20:02:15 by erayl            ###   ########.fr       */
+/*   Updated: 2022/01/15 21:29:19 by erayl            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "phils.h"
 
 static
-void	log4death(t_philosopher *this)
+void	log4death(t_phil *self)
 {
-	long long	time_of_death;
+	t_ms	time_of_death;
 
-	this->lifecfg->is_someone_dead = true;
-	time_of_death = this->last_time_eated + this->lifecfg->time_to_die;
-	printf("%lld %zu died\n", time_of_death, this->num);
+	self->lifecfg->is_someone_dead = true;
+	time_of_death = self->last_time_eated + self->lifecfg->time_to_die;
+	printf("%lld %zu died\n", time_of_death, self->num);
+}
+
+void	die(t_phil *self)
+{
+	pthread_mutex_lock(&self->lifecfg->death_mutex);
+	log4death(self);
+	pthread_mutex_unlock(&self->lifecfg->death_mutex);
 }
 
 static
-void	die(t_philosopher *this)
+bool	i_die_in_progress(t_phil *self, t_ms time_of_work)
 {
-	pthread_mutex_lock(&this->lifecfg->death_mutex);
-	log4death(this);
-	pthread_mutex_unlock(&this->lifecfg->death_mutex);
-}
-
-static
-bool	i_die_in_progress(t_philosopher *this, long long time_of_work)
-{
-	long long	time_after_work;
-	long long	expected_death_time;
+	t_ms	time_after_work;
+	t_ms	expected_death_time;
 
 	time_after_work = current_timestamp() + time_of_work;
-	expected_death_time = this->lifecfg->time_to_die + this->last_time_eated;
+	expected_death_time = self->lifecfg->time_to_die + self->last_time_eated;
 	if (time_after_work > expected_death_time)
 	{
-		die(this);
+		die(self);
 		return (true);
 	}
 	return (false);
 }
 
-void	eat(t_philosopher *this)
+void	eat(t_phil *self)
 {
-	if (this->last_time_eated == 0)
-		this->last_time_eated = current_timestamp();
-	if (i_die_in_progress(this, this->lifecfg->time_to_eat))
+	if (self->last_time_eated == 0)
+		self->last_time_eated = current_timestamp();
+	if (i_die_in_progress(self, self->lifecfg->time_to_eat))
 		return ;
-	log_print(this, eat_msg);
-	accurate_sleep(this->lifecfg->time_to_eat);
-	this->last_time_eated = current_timestamp();
-	this->eat_count++;
+	log_print(self, eat_msg);
+	accurate_sleep(self->lifecfg->time_to_eat);
+	self->last_time_eated = current_timestamp();
+	self->eat_count++;
 }
 
-void	sweet_sleep(t_philosopher	*this)
+void	sweet_sleep(t_phil	*self)
 {
-	if (i_die_in_progress(this, this->lifecfg->time_to_sleep))
+	if (i_die_in_progress(self, self->lifecfg->time_to_sleep))
 		return ;
-	log_print(this, sleep_msg);
-	accurate_sleep(this->lifecfg->time_to_eat);
+	log_print(self, sleep_msg);
+	accurate_sleep(self->lifecfg->time_to_eat);
 }

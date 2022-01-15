@@ -6,7 +6,7 @@
 /*   By: erayl <erayl@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/18 16:02:30 by erayl             #+#    #+#             */
-/*   Updated: 2022/01/14 20:03:38 by erayl            ###   ########.fr       */
+/*   Updated: 2022/01/15 21:24:46 by erayl            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ void	destroy_table(t_maincfg	*cfg)
 	t_fork	*fork;
 
 	i = 0;
-	while (i < cfg->number_of_philosophers)
+	while (i < cfg->num_of_phils)
 	{
 		fork = cfg->forks + i;
 		pthread_mutex_destroy(&fork->mutex);
@@ -31,50 +31,35 @@ void	destroy_table(t_maincfg	*cfg)
 }
 
 static
-void	philosopher_init(t_philosopher *philosopher,
+void	philosopher_init(t_phil *philosopher,
 size_t num, t_maincfg *cfg)
 {
-	t_fork	*right_fork;
-	t_fork	*left_fork;
-
-	right_fork = cfg->forks + (num % cfg->number_of_philosophers);
-	left_fork = cfg->forks + ((num + 1) % cfg->number_of_philosophers);
-	if (left_fork->priority > right_fork->priority)
-	{
-		philosopher->first = &right_fork->mutex;
-		philosopher->second = &left_fork->mutex;
-	}
-	else
-	{
-		philosopher->first = &left_fork->mutex;
-		philosopher->second = &right_fork->mutex;
-	}
+	philosopher->right_fork = &cfg->forks[num % cfg->num_of_phils];
+	philosopher->left_fork = &cfg->forks[(num + 1) % cfg->num_of_phils];
 	philosopher->eat_count = 0;
 	philosopher->num = num + 1;
 	philosopher->lifecfg = &cfg->lifecfg;
-	philosopher->is_first_locked_by_me = false;
-	philosopher->is_second_locked_by_me = false;
 }
 
 static
 void	create_table(t_maincfg *cfg)
 {
-	size_t			i;
-	t_fork			*forks;
-	t_philosopher	*philosophers;
+	size_t	i;
+	t_fork	*forks;
+	t_phil	*philosophers;
 
-	forks = malloc(sizeof(t_fork) * cfg->number_of_philosophers);
+	forks = malloc(sizeof(t_fork) * cfg->num_of_phils);
 	i = 0;
-	while (i < cfg->number_of_philosophers)
+	while (i < cfg->num_of_phils)
 	{
 		pthread_mutex_init(&forks[i].mutex, NULL);
 		forks[i].priority = i;
 		i++;
 	}
 	cfg->forks = forks;
-	philosophers = malloc(sizeof(t_philosopher) * cfg->number_of_philosophers);
+	philosophers = malloc(sizeof(t_phil) * cfg->num_of_phils);
 	i = 0;
-	while (i < cfg->number_of_philosophers)
+	while (i < cfg->num_of_phils)
 	{
 		philosopher_init(philosophers + i, i, cfg);
 		i++;
@@ -85,16 +70,19 @@ void	create_table(t_maincfg *cfg)
 static
 void	configure(t_maincfg *cfg, int argc, char **argv)
 {
-	cfg->number_of_philosophers = ft_atost(argv[1]);
-	cfg->lifecfg.time_to_die = ft_atolld(argv[2]);
-	cfg->lifecfg.time_to_eat = ft_atolld(argv[3]);
-	cfg->lifecfg.time_to_sleep = ft_atolld(argv[4]);
+	cfg->num_of_phils = ft_atost(argv[1]);
+	cfg->lifecfg.time_to_die = ft_atoms(argv[2]);
+	cfg->lifecfg.time_to_eat = ft_atoms(argv[3]);
+	cfg->lifecfg.time_to_sleep = ft_atoms(argv[4]);
 	cfg->lifecfg.is_someone_dead = false;
 	pthread_mutex_init(&cfg->lifecfg.death_mutex, NULL);
 	if (argc == 6)
 		cfg->lifecfg.nums_to_eat = ft_atost(argv[5]);
 	else
 		cfg->lifecfg.nums_to_eat = 0;
+	if (!cfg->num_of_phils || !cfg->lifecfg.time_to_die
+		|| !cfg->lifecfg.time_to_eat || !cfg->lifecfg.time_to_sleep)
+		cfg->lifecfg.is_someone_dead = true;
 	create_table(cfg);
 }
 

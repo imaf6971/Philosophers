@@ -6,71 +6,59 @@
 /*   By: erayl <erayl@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/19 17:46:45 by erayl             #+#    #+#             */
-/*   Updated: 2022/01/14 20:36:03 by erayl            ###   ########.fr       */
+/*   Updated: 2022/01/15 21:26:36 by erayl            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "phils.h"
 
 static
-void	think(t_philosopher *this)
+void	think(t_phil *self)
 {
-	log_print(this, think_msg);
+	log_print(self, think_msg);
 }
 
 static
-void	free_mutexes(t_philosopher *this)
+bool	i_have_eaten_enough(t_phil *self)
 {
-	if (this->is_first_locked_by_me)
-		drop_first(this);
-	if (this->is_second_locked_by_me)
-		drop_second(this);
-}
-
-static
-bool	i_have_eaten_enough(t_philosopher *this)
-{
-	if (this->lifecfg->nums_to_eat)
-		return (!(this->eat_count < this->lifecfg->nums_to_eat));
+	if (self->lifecfg->nums_to_eat)
+		return (self->eat_count >= self->lifecfg->nums_to_eat);
 	return (false);
 }
 
 static
-bool	try_to(t_philosopher *this, void (*action)(t_philosopher *))
+bool	try_to(t_phil *self, void (*action)(t_phil *))
 {
-	if (i_have_eaten_enough(this) || this->lifecfg->is_someone_dead)
+	if (i_have_eaten_enough(self) || self->lifecfg->is_someone_dead)
 	{
-		free_mutexes(this);
+		drop_forks(self);
 		return (false);
 	}
-	action(this);
+	action(self);
 	return (true);
 }
 
 void	*philosopher(void *param)
 {
-	t_philosopher	*this;
-	size_t			i;
-	void			(*life[7])(t_philosopher *this);
+	t_phil	*self;
+	size_t	i;
+	void	(*life[7])(t_phil *);
 
-	this = param;
-	life[0] = &take_first;
-	life[1] = &take_second;
-	life[2] = &eat;
-	life[3] = &drop_second;
-	life[4] = &drop_first;
-	life[5] = &sweet_sleep;
-	life[6] = &think;
-	this->last_time_eated = current_timestamp();
+	self = param;
+	life[0] = &take_forks;
+	life[1] = &eat;
+	life[2] = &drop_forks;
+	life[3] = &sweet_sleep;
+	life[4] = &think;
+	self->last_time_eated = 0;
 	while (true)
 	{
 		i = 0;
-		while (i < 7)
+		while (i < 5)
 		{
-			if (!try_to(this, life[i]))
+			if (!try_to(self, life[i]))
 				return (NULL);
 			i++;
 		}
 	}
-	return (NULL);
 }

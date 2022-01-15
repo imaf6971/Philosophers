@@ -6,35 +6,35 @@
 /*   By: erayl <erayl@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/12 16:36:03 by erayl             #+#    #+#             */
-/*   Updated: 2022/01/14 19:49:24 by erayl            ###   ########.fr       */
+/*   Updated: 2022/01/15 19:55:59 by erayl            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "phils.h"
 
 static
-long long	system_time_in_ms(void)
+t_ms	system_time(void)
 {
 	struct timeval	te;
-	long long		milliseconds;
+	t_ms			ms;
 
 	gettimeofday(&te, NULL);
-	milliseconds = te.tv_sec * 1000LL + te.tv_usec / 1000;
-	return (milliseconds);
+	ms = te.tv_sec * 1000LL + te.tv_usec / 1000;
+	return (ms);
 }
 
-long long	current_timestamp(void)
+t_ms	current_timestamp(void)
 {
-	static long long	start_time;
+	static t_ms	start_time;
 
 	if (start_time == 0)
-		start_time = system_time_in_ms();
-	return (system_time_in_ms() - start_time);
+		start_time = system_time();
+	return (system_time() - start_time);
 }
 
-void	accurate_sleep(long long time_to_wait)
+void	accurate_sleep(t_ms	time_to_wait)
 {
-	long long	initial_time;
+	t_ms	initial_time;
 
 	initial_time = current_timestamp();
 	while (current_timestamp() - initial_time < time_to_wait)

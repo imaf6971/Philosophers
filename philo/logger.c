@@ -12,7 +12,7 @@
 
 #include "phils.h"
 
-void	log_print(t_philosopher *this, void (*msg)(t_philosopher *))
+void	log_print(t_phil *this, void (*msg)(t_phil *))
 {
 	pthread_mutex_lock(&this->lifecfg->death_mutex);
 	if (!this->lifecfg->is_someone_dead)
@@ -20,22 +20,22 @@ void	log_print(t_philosopher *this, void (*msg)(t_philosopher *))
 	pthread_mutex_unlock(&this->lifecfg->death_mutex);
 }
 
-void	fork_msg(t_philosopher *this)
+void	fork_msg(t_phil *this)
 {
 	printf("%lld %zu has taken a fork\n", current_timestamp(), this->num);
 }
 
-void	eat_msg(t_philosopher *this)
+void	eat_msg(t_phil *this)
 {
 	printf("%lld %zu is eating\n", current_timestamp(), this->num);
 }
 
-void	sleep_msg(t_philosopher *this)
+void	sleep_msg(t_phil *this)
 {
 	printf("%lld %zu is sleeping\n", current_timestamp(), this->num);
 }
 
-void	think_msg(t_philosopher *this)
+void	think_msg(t_phil *this)
 {
 	printf("%lld %zu is thinking\n", current_timestamp(), this->num);
 }
