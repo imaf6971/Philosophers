@@ -6,7 +6,7 @@
 /*   By: erayl <erayl@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/19 17:46:45 by erayl             #+#    #+#             */
-/*   Updated: 2022/01/15 21:26:36 by erayl            ###   ########.fr       */
+/*   Updated: 2022/01/16 02:24:01 by erayl            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ void	*philosopher(void *param)
 {
 	t_phil	*self;
 	size_t	i;
-	void	(*life[7])(t_phil *);
+	void	(*life[5])(t_phil *);
 
 	self = param;
 	life[0] = &take_forks;
